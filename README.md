@@ -17,3 +17,20 @@ Aktifkan Pages dari branch `main` dan folder `/root`. Halaman utama tersedia di:
 Halaman admin: `https://cloudgaming43-wq.github.io/menu-dapur-ulul/admin.html`
 
 GitHub Pages bersifat statis. Token di halaman admin bukan sistem keamanan tingkat produksi, jadi gunakan hanya untuk pengelolaan sederhana dan jangan simpan data sensitif di Sheet.
+
+## Auto-sync ke GitHub
+
+Jalankan PowerShell dari folder repository:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\auto-sync.ps1
+```
+
+Biarkan jendela PowerShell tetap terbuka. Setiap perubahan file akan otomatis dibuatkan commit dan di-push ke branch `main` setiap beberapa detik. Tekan `Ctrl+C` untuk menghentikan watcher.
+
+Untuk menjalankannya otomatis saat login Windows, buat shortcut ke perintah berikut di folder Startup (`Win+R` lalu ketik `shell:startup`):
+
+```text
+powershell.exe -ExecutionPolicy Bypass -File "E:\Menu Dapur Ulul\Menu Dapur Ulul\auto-sync.ps1"
+```
