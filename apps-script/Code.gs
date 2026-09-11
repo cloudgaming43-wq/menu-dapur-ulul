@@ -6,6 +6,15 @@ function setup() {
   if (sheet.getLastRow() === 0) {
     sheet.appendRow(['id', 'name', 'price', 'category', 'badge', 'description', 'image']);
   }
+
+  if (sheet.getLastRow() === 1) {
+    sheet.getRange(2, 1, 4, 7).setValues([
+      ['ayam-geprek', 'Ayam Geprek', 18000, 'makanan', 'BEST SELLER', 'Ayam crispy dengan sambal pedas dan nasi.', 'images/ayam-geprek.jpg'],
+      ['seafood-platter', 'Seafood Platter', 35000, 'seafood', 'FAVORIT', 'Kerang, udang, cumi dan jagung dengan saus pilihan.', 'images/seafood-platter.jpg'],
+      ['kentang-mustofa', 'Kentang Mustofa', 15000, 'snack', '', 'Kentang renyah dengan bumbu gurih dan pedas.', 'images/kentang-mustofa.jpg'],
+      ['es-teh-manis', 'Es Teh Manis', 5000, 'minuman', '', 'Teh manis dingin yang menyegarkan.', 'images/es-teh.jpg']
+    ]);
+  }
 }
 
 function doGet() {
