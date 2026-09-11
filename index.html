@@ -124,6 +124,13 @@ body {
     gap: 10px;
 }
 
+.admin-link {
+    color: #8b4513;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
 /* =========================
    HERO
 ========================= */
@@ -758,6 +765,8 @@ body {
 
 
     <div class="header-actions">
+
+    <a class="admin-link" href="admin.html">Admin</a>
 
     <button
         class="add-menu-toggle"
@@ -1588,6 +1597,7 @@ function filterProducts() {
 ========================= */
 
 const savedMenusKey = 'dapurUlulMenus';
+const sheetsApiUrl = '';
 
 
 function toggleAddMenu() {
@@ -1690,12 +1700,45 @@ function saveMenu(event) {
 
 function loadSavedMenus() {
 
+    if (sheetsApiUrl) {
+        return;
+    }
+
     const menus = JSON.parse(localStorage.getItem(savedMenusKey) || '[]');
     const menuGrid = document.getElementById('menuGrid');
 
     menus.forEach(menu => {
         menuGrid.appendChild(createMenuCard(menu));
     });
+
+}
+
+
+async function loadMenusFromSheets() {
+
+    if (!sheetsApiUrl) {
+        return;
+    }
+
+    try {
+        const response = await fetch(sheetsApiUrl);
+        if (!response.ok) {
+            throw new Error('Google Sheets tidak merespons.');
+        }
+
+        const menus = await response.json();
+        if (!Array.isArray(menus)) {
+            throw new Error('Format data menu tidak valid.');
+        }
+
+        menus.forEach(menu => {
+            document
+                .getElementById('menuGrid')
+                .appendChild(createMenuCard(menu));
+        });
+    } catch (error) {
+        console.error('Gagal memuat menu dari Google Sheets:', error);
+    }
 
 }
 
@@ -1778,6 +1821,7 @@ document
     .addEventListener('submit', saveMenu);
 
 loadSavedMenus();
+loadMenusFromSheets();
 
 </script>
 
