@@ -142,7 +142,7 @@ async function loadMenus() {
         if (!Array.isArray(menus)) throw new Error('Format data dari Google Sheets tidak valid.');
         renderRows(); showStatus(`${menus.length} menu dimuat dari Google Sheets.`);
     } catch (error) {
-        showStatus(error instanceof TypeError ? 'Failed to fetch. Pastikan URL /exec benar, akses deployment Anyone, dan halaman dibuka dari HTTPS GitHub Pages.' : error.message, true);
+        showStatus(error instanceof TypeError ? 'Failed to fetch. Deployment Apps Script mengarah ke login Google. Edit deployment menjadi Anyone, lalu deploy versi baru.' : error.message, true);
     }
 }
 

@@ -1,5 +1,5 @@
 const SHEET_NAME = 'Menus';
-const ADMIN_TOKEN = 'DU-admin-2026-X7p9K2mQ';
+const ADMIN_TOKEN = 'mama-ulul';
 
 function setup() {
   const sheet = getSheet_();
