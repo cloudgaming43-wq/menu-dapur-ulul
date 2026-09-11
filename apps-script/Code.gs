@@ -15,7 +15,7 @@ function doGet() {
 
 function doPost(event) {
   const body = JSON.parse(event.postData.contents || '{}');
-  const adminToken = PropertiesService.getScriptProperties().getProperty(TOKEN_PROPERTY);
+  const adminToken = getAdminToken_();
   if (!adminToken || String(body.token || '').trim() !== adminToken) {
     return json_({ error: 'Unauthorized' });
   }
