@@ -108,6 +108,22 @@ body {
     justify-content: center;
 }
 
+.add-menu-toggle {
+    border: 1px solid #8b4513;
+    background: white;
+    color: #8b4513;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 /* =========================
    HERO
 ========================= */
@@ -171,6 +187,93 @@ body {
 
 .search-box input:focus {
     border-color: #8b4513;
+}
+
+.add-menu-panel {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 15px 10px;
+    display: none;
+}
+
+.add-menu-panel.show {
+    display: block;
+}
+
+.add-menu-form {
+    background: white;
+    border: 1px solid #eadfd5;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.05);
+}
+
+.add-menu-form h2 {
+    color: #8b4513;
+    font-size: 19px;
+    margin-bottom: 12px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-field.full {
+    grid-column: 1 / -1;
+}
+
+.form-field label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #555;
+}
+
+.form-field input,
+.form-field select {
+    width: 100%;
+    padding: 10px 11px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font: inherit;
+}
+
+.form-field input:focus,
+.form-field select:focus {
+    outline: 2px solid rgba(139,69,19,.2);
+    border-color: #8b4513;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.form-actions button {
+    border: 0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.cancel-menu {
+    background: #f2eee9;
+    color: #555;
+}
+
+.save-menu {
+    background: #8b4513;
+    color: white;
 }
 
 .search-icon {
@@ -562,6 +665,34 @@ body {
 
 @media(max-width: 600px) {
 
+    .header {
+        padding: 8px 12px;
+    }
+
+    .logo-text {
+        font-size: 16px;
+    }
+
+    .add-menu-toggle {
+        font-size: 0;
+        width: 42px;
+        height: 42px;
+        padding: 0;
+    }
+
+    .add-menu-toggle::before {
+        content: '+';
+        font-size: 24px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-field.full {
+        grid-column: auto;
+    }
+
     .hero {
         height: 250px;
     }
@@ -626,6 +757,17 @@ body {
     </div>
 
 
+    <div class="header-actions">
+
+    <button
+        class="add-menu-toggle"
+        type="button"
+        onclick="toggleAddMenu()"
+        aria-controls="addMenuPanel"
+        aria-expanded="false">
+        + Tambah Menu
+    </button>
+
     <button
         class="cart-button"
         onclick="openCart()">
@@ -639,6 +781,8 @@ body {
         </span>
 
     </button>
+
+    </div>
 
 </header>
 
@@ -658,6 +802,65 @@ body {
         </p>
 
     </div>
+
+</section>
+
+<section
+    id="addMenuPanel"
+    class="add-menu-panel"
+    aria-hidden="true">
+
+    <form
+        id="addMenuForm"
+        class="add-menu-form">
+
+        <h2>Tambah Menu Baru</h2>
+
+        <div class="form-grid">
+
+            <div class="form-field">
+                <label for="menuName">Nama menu</label>
+                <input id="menuName" name="name" required maxlength="60">
+            </div>
+
+            <div class="form-field">
+                <label for="menuPrice">Harga (Rp)</label>
+                <input id="menuPrice" name="price" type="number" min="1" required>
+            </div>
+
+            <div class="form-field">
+                <label for="menuCategory">Kategori</label>
+                <select id="menuCategory" name="category" required>
+                    <option value="makanan">Makanan</option>
+                    <option value="seafood">Seafood</option>
+                    <option value="snack">Snack</option>
+                    <option value="minuman">Minuman</option>
+                </select>
+            </div>
+
+            <div class="form-field">
+                <label for="menuBadge">Label (opsional)</label>
+                <input id="menuBadge" name="badge" maxlength="20" placeholder="Favorit">
+            </div>
+
+            <div class="form-field full">
+                <label for="menuDescription">Deskripsi</label>
+                <input id="menuDescription" name="description" required maxlength="120">
+            </div>
+
+            <div class="form-field full">
+                <label for="menuImage">URL gambar (opsional)</label>
+                <input id="menuImage" name="image" type="text" placeholder="https://... atau images/nama-file.jpg">
+            </div>
+
+        </div>
+
+        <div class="form-actions">
+            <button class="cancel-menu" type="button" onclick="toggleAddMenu()">Batal</button>
+            <button class="save-menu" type="submit">Simpan Menu</button>
+        </div>
+
+    </form>
 
 </section>
 
@@ -1381,6 +1584,123 @@ function filterProducts() {
 
 
 /* =========================
+   ADD MENU
+========================= */
+
+const savedMenusKey = 'dapurUlulMenus';
+
+
+function toggleAddMenu() {
+
+    const panel = document.getElementById('addMenuPanel');
+    const button = document.querySelector('.add-menu-toggle');
+    const isOpen = panel.classList.toggle('show');
+
+    panel.setAttribute('aria-hidden', String(!isOpen));
+    button.setAttribute('aria-expanded', String(isOpen));
+
+}
+
+
+function createMenuCard(menu) {
+
+    const card = document.createElement('div');
+    card.className = 'menu-card';
+    card.dataset.category = menu.category;
+    card.dataset.name = menu.name;
+
+    const imageWrapper = document.createElement('div');
+    imageWrapper.className = 'menu-image-wrapper';
+
+    const image = document.createElement('img');
+    image.className = 'menu-image';
+    image.src = menu.image || 'images/seafood-platter.jpg';
+    image.alt = menu.name;
+    image.onerror = () => {
+        image.src = 'images/seafood-platter.jpg';
+    };
+    imageWrapper.appendChild(image);
+
+    if (menu.badge) {
+        const badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.textContent = menu.badge;
+        imageWrapper.appendChild(badge);
+    }
+
+    const info = document.createElement('div');
+    info.className = 'menu-info';
+
+    const name = document.createElement('div');
+    name.className = 'menu-name';
+    name.textContent = menu.name;
+
+    const description = document.createElement('div');
+    description.className = 'menu-description';
+    description.textContent = menu.description;
+
+    const footer = document.createElement('div');
+    footer.className = 'menu-footer';
+
+    const price = document.createElement('span');
+    price.className = 'price';
+    price.textContent = formatRupiah(menu.price);
+
+    const addButton = document.createElement('button');
+    addButton.className = 'add-button';
+    addButton.type = 'button';
+    addButton.textContent = '+';
+    addButton.setAttribute('aria-label', `Tambah ${menu.name} ke keranjang`);
+    addButton.addEventListener('click', () => addToCart(menu.name, menu.price));
+
+    footer.append(price, addButton);
+    info.append(name, description, footer);
+    card.append(imageWrapper, info);
+
+    return card;
+
+}
+
+
+function saveMenu(event) {
+
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const menu = {
+        name: formData.get('name').trim(),
+        price: Number(formData.get('price')),
+        category: formData.get('category'),
+        badge: formData.get('badge').trim(),
+        description: formData.get('description').trim(),
+        image: formData.get('image').trim()
+    };
+
+    const menus = JSON.parse(localStorage.getItem(savedMenusKey) || '[]');
+    menus.push(menu);
+    localStorage.setItem(savedMenusKey, JSON.stringify(menus));
+
+    document.getElementById('menuGrid').appendChild(createMenuCard(menu));
+    event.target.reset();
+    toggleAddMenu();
+    filterProducts();
+
+}
+
+
+function loadSavedMenus() {
+
+    const menus = JSON.parse(localStorage.getItem(savedMenusKey) || '[]');
+    const menuGrid = document.getElementById('menuGrid');
+
+    menus.forEach(menu => {
+        menuGrid.appendChild(createMenuCard(menu));
+    });
+
+}
+
+
+/* =========================
    WHATSAPP CHECKOUT
 ========================= */
 
@@ -1451,6 +1771,13 @@ function checkoutWhatsApp() {
     );
 
 }
+
+
+document
+    .getElementById('addMenuForm')
+    .addEventListener('submit', saveMenu);
+
+loadSavedMenus();
 
 </script>
 
