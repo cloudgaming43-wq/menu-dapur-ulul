@@ -51,7 +51,7 @@ td { font-size: 14px; }
             <input id="apiUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec">
         </div>
         <div class="field">
-            <label for="apiToken">DU-admin-2026-X7p9K2mQ</label>
+            <label for="apiToken">mama-ulul</label>
             <input id="apiToken" type="password" placeholder="Sesuai token di Apps Script">
         </div>
     </div>
@@ -91,7 +91,7 @@ let menus = [];
 const $ = id => document.getElementById(id);
 const formatRupiah = value => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
 
-function settings() { return { url: $('apiUrl').value.trim(), token: $('apiToken').value.trim() }; }
+function settings() { return { url: $('apiUrl').value.trim().replace(/\/$/, ''), token: $('apiToken').value.trim() }; }
 function showStatus(message, isError = false) { $('status').textContent = message; $('status').style.color = isError ? '#c62828' : '#666'; }
 function readSettings() { const data = JSON.parse(localStorage.getItem(settingsKey) || '{}'); $('apiUrl').value = data.url || ''; $('apiToken').value = data.token || ''; }
 function writeSettings() { localStorage.setItem(settingsKey, JSON.stringify(settings())); showStatus('Pengaturan tersimpan di browser ini.'); }
@@ -115,17 +115,35 @@ function editMenu(menu) { Object.entries(menu).forEach(([key, value]) => { if ($
 async function request(action, menu) {
     const config = settings();
     if (!config.url) throw new Error('Isi URL Web App Google Apps Script terlebih dahulu.');
-    const response = await fetch(config.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, token: config.token, menu }) });
-    if (!response.ok) throw new Error('Permintaan ke Google Sheets gagal.');
-    const result = await response.json();
-    if (result.error) throw new Error(result.error);
-    return result;
+    if (!/\/exec(?:\?.*)?$/.test(config.url)) throw new Error('Gunakan URL deployment yang berakhiran /exec, bukan /dev.');
+
+    try {
+        const response = await fetch(config.url, { method: 'POST', mode: 'cors', cache: 'no-store', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, token: config.token, menu }) });
+        const text = await response.text();
+        let result;
+        try { result = JSON.parse(text); } catch { throw new Error('Respons Apps Script bukan JSON. Pastikan deployment berakses Anyone.'); }
+        if (!response.ok || result.error) throw new Error(result.error || `HTTP ${response.status}`);
+        return result;
+    } catch (error) {
+        if (error instanceof TypeError) throw new Error('Failed to fetch. Pastikan URL /exec benar, deployment Apps Script berakses Anyone, dan buka halaman melalui HTTPS GitHub Pages.');
+        throw error;
+    }
 }
 
 async function loadMenus() {
     const config = settings();
     if (!config.url) { menus = JSON.parse(localStorage.getItem(localMenusKey) || '[]'); renderRows(); showStatus('Mode lokal aktif. Isi URL Apps Script untuk memakai Google Sheets.'); return; }
-    try { const response = await fetch(config.url); if (!response.ok) throw new Error('Gagal membaca Google Sheets.'); menus = await response.json(); renderRows(); showStatus(`${menus.length} menu dimuat dari Google Sheets.`); } catch (error) { showStatus(error.message, true); }
+    if (!/\/exec(?:\?.*)?$/.test(config.url)) { showStatus('Gunakan URL deployment yang berakhiran /exec, bukan /dev.', true); return; }
+    try {
+        const response = await fetch(config.url, { mode: 'cors', cache: 'no-store' });
+        const text = await response.text();
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        try { menus = JSON.parse(text); } catch { throw new Error('Respons Apps Script bukan JSON.'); }
+        if (!Array.isArray(menus)) throw new Error('Format data dari Google Sheets tidak valid.');
+        renderRows(); showStatus(`${menus.length} menu dimuat dari Google Sheets.`);
+    } catch (error) {
+        showStatus(error instanceof TypeError ? 'Failed to fetch. Pastikan URL /exec benar, akses deployment Anyone, dan halaman dibuka dari HTTPS GitHub Pages.' : error.message, true);
+    }
 }
 
 $('menuForm').onsubmit = async event => {
