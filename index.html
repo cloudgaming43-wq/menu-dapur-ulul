@@ -1476,7 +1476,7 @@ async function saveMenu(event) {
         id: crypto.randomUUID()
     };
 
-    const password = formData.get('password');
+    const password = formData.get('password').trim();
 
     if (!sheetsApiUrl) {
         alert('Google Sheets belum terhubung.');
