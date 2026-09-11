@@ -1,5 +1,5 @@
 const SHEET_NAME = 'Menus';
-const ADMIN_TOKEN = 'mama-ulul';
+const TOKEN_PROPERTY = 'ADMIN_TOKEN';
 
 function setup() {
   const sheet = getSheet_();
@@ -15,7 +15,8 @@ function doGet() {
 
 function doPost(event) {
   const body = JSON.parse(event.postData.contents || '{}');
-  if (ADMIN_TOKEN && body.token !== ADMIN_TOKEN) {
+  const adminToken = PropertiesService.getScriptProperties().getProperty(TOKEN_PROPERTY);
+  if (!adminToken || String(body.token || '').trim() !== adminToken) {
     return json_({ error: 'Unauthorized' });
   }
 
@@ -24,6 +25,10 @@ function doPost(event) {
   if (action === 'update') updateMenu_(body.menu);
   if (action === 'delete') deleteMenu_(body.menu.id);
   return json_({ ok: true, menus: readMenus_() });
+}
+
+function getAdminToken_() {
+  return PropertiesService.getScriptProperties().getProperty(TOKEN_PROPERTY) || '';
 }
 
 function getSheet_() {
