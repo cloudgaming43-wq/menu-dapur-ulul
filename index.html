@@ -862,6 +862,11 @@ body {
                 <input id="menuImage" name="image" type="text" placeholder="https://... atau images/nama-file.jpg">
             </div>
 
+            <div class="form-field full">
+                <label for="menuPassword">Password admin</label>
+                <input id="menuPassword" name="password" type="password" required autocomplete="current-password">
+            </div>
+
         </div>
 
         <div class="form-actions">
@@ -1672,7 +1677,7 @@ function createMenuCard(menu) {
 }
 
 
-function saveMenu(event) {
+async function saveMenu(event) {
 
     event.preventDefault();
 
@@ -1683,12 +1688,41 @@ function saveMenu(event) {
         category: formData.get('category'),
         badge: formData.get('badge').trim(),
         description: formData.get('description').trim(),
-        image: formData.get('image').trim()
+        image: formData.get('image').trim(),
+        id: crypto.randomUUID()
     };
 
-    const menus = JSON.parse(localStorage.getItem(savedMenusKey) || '[]');
-    menus.push(menu);
-    localStorage.setItem(savedMenusKey, JSON.stringify(menus));
+    const password = formData.get('password');
+
+    if (!sheetsApiUrl) {
+        alert('Google Sheets belum terhubung.');
+        return;
+    }
+
+    try {
+        const response = await fetch(sheetsApiUrl, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8'
+            },
+            body: JSON.stringify({
+                action: 'create',
+                token: password,
+                menu: menu
+            })
+        });
+        const result = await response.json();
+
+        if (!response.ok || result.error) {
+            throw new Error(result.error || 'Menu gagal disimpan.');
+        }
+    } catch (error) {
+        alert(error.message === 'Unauthorized'
+            ? 'Password admin salah.'
+            : 'Menu gagal disimpan ke Google Sheets.');
+        return;
+    }
 
     document.getElementById('menuGrid').appendChild(createMenuCard(menu));
     event.target.reset();
