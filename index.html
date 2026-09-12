@@ -128,7 +128,7 @@ body {
             rgba(0,0,0,.45),
             rgba(0,0,0,.45)
         ),
-        url("images/seafood-platter.jpg")
+        url("images/bg.jpg")
         center/cover;
 
     display: flex;
@@ -1276,10 +1276,10 @@ function createMenuCard(menu) {
 
     const image = document.createElement('img');
     image.className = 'menu-image';
-    image.src = menu.image || 'images/seafood-platter.jpg';
+    image.src = menu.image || 'images/bg.jpg';
     image.alt = menu.name;
     image.onerror = () => {
-        image.src = 'images/seafood-platter.jpg';
+        image.src = 'images/bg.jpg';
     };
     imageWrapper.appendChild(image);
 
