@@ -123,13 +123,17 @@ body {
 .hero {
     height: 300px;
 
-    background:
+    background-color: #555;
+    background-image:
         linear-gradient(
             rgba(0,0,0,.45),
             rgba(0,0,0,.45)
         ),
-        url("images/bg.jpg")
-        center/cover;
+        url("./images/bg.jpg");
+
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
 
     display: flex;
     align-items: center;
@@ -446,6 +450,12 @@ body {
     display: flex;
 
     flex-direction: column;
+    transform: translateX(100%);
+    transition: transform .25s ease;
+}
+
+.cart-overlay.show .cart {
+    transform: translateX(0);
 }
 
 .cart-header {
@@ -462,6 +472,15 @@ body {
 
 .cart-header h2 {
     font-size: 20px;
+}
+
+.clear-cart {
+    border: 1px solid #e53935;
+    border-radius: 6px;
+    background: white;
+    color: #e53935;
+    padding: 6px 9px;
+    cursor: pointer;
 }
 
 .close-cart {
@@ -539,6 +558,39 @@ body {
     border-top: 1px solid #ddd;
 }
 
+.checkout-form {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.checkout-form label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #555;
+}
+
+.checkout-form input,
+.checkout-form textarea {
+    width: 100%;
+    padding: 10px 11px;
+    border: 1px solid #ddd;
+    border-radius: 7px;
+    font: inherit;
+    font-size: 13px;
+    outline: none;
+}
+
+.checkout-form input:focus,
+.checkout-form textarea:focus {
+    border-color: #8b4513;
+}
+
+.checkout-form textarea {
+    min-height: 62px;
+    resize: vertical;
+}
+
 .summary-row {
     display: flex;
 
@@ -597,6 +649,26 @@ body {
     padding: 50px;
 
     color: #888;
+}
+
+.menu-status {
+    text-align: center;
+    padding: 45px 20px;
+    color: #888;
+}
+
+.menu-status.error {
+    color: #b42318;
+}
+
+.retry-button {
+    margin-top: 12px;
+    padding: 9px 15px;
+    border: none;
+    border-radius: 8px;
+    background: #8b4513;
+    color: white;
+    cursor: pointer;
 }
 
 /* =========================
@@ -815,6 +887,12 @@ body {
         class="menu-grid"
         id="menuGrid"></div>
 
+    <div
+        id="menuStatus"
+        class="menu-status">
+        Memuat menu...
+    </div>
+
 
     <div
         id="noResult"
@@ -846,6 +924,13 @@ body {
             <h2>
                 🛒 Keranjang
             </h2>
+
+            <button
+                class="clear-cart"
+                type="button"
+                onclick="clearCart()">
+                Kosongkan
+            </button>
 
             <button
                 class="close-cart"
@@ -895,6 +980,22 @@ body {
                     class="total">
                     Rp0
                 </span>
+
+            </div>
+
+            <div class="checkout-form">
+
+                <label for="customerName">Nama</label>
+                <input id="customerName" type="text" placeholder="Nama lengkap" autocomplete="name">
+
+                <label for="customerPhone">Nomor WhatsApp</label>
+                <input id="customerPhone" type="tel" placeholder="08xxxxxxxxxx" autocomplete="tel">
+
+                <label for="customerAddress">Alamat</label>
+                <textarea id="customerAddress" placeholder="Alamat pengantaran" autocomplete="street-address"></textarea>
+
+                <label for="customerNote">Catatan</label>
+                <textarea id="customerNote" placeholder="Catatan tambahan (opsional)"></textarea>
 
             </div>
 
@@ -1121,6 +1222,18 @@ function removeItem(index) {
 }
 
 
+function clearCart() {
+
+    if (cart.length === 0) {
+        return;
+    }
+
+    cart = [];
+    updateCart();
+
+}
+
+
 /* =========================
    OPEN CART
 ========================= */
@@ -1276,6 +1389,7 @@ function createMenuCard(menu) {
 
     const image = document.createElement('img');
     image.className = 'menu-image';
+    image.loading = 'lazy';
     image.src = menu.image || 'images/bg.jpg';
     image.alt = menu.name;
     image.onerror = () => {
@@ -1326,7 +1440,10 @@ function createMenuCard(menu) {
 
 async function loadMenusFromSheets() {
 
+    const status = document.getElementById('menuStatus');
+
     if (!sheetsApiUrl) {
+        status.style.display = 'none';
         return;
     }
 
@@ -1341,6 +1458,8 @@ async function loadMenusFromSheets() {
             throw new Error('Format data menu tidak valid.');
         }
 
+        status.style.display = 'none';
+
         menus.forEach(menu => {
             document
                 .getElementById('menuGrid')
@@ -1348,6 +1467,14 @@ async function loadMenusFromSheets() {
         });
     } catch (error) {
         console.error('Gagal memuat menu dari Google Sheets:', error);
+        status.className = 'menu-status error';
+        status.innerHTML = `
+            Menu belum dapat dimuat.
+            <br>
+            <button class="retry-button" type="button" onclick="loadMenusFromSheets()">
+                Coba Lagi
+            </button>
+        `;
     }
 
 }
@@ -1369,16 +1496,33 @@ function checkoutWhatsApp() {
 
     }
 
+    const customerName =
+        document.getElementById('customerName').value.trim();
+
+    const customerPhone =
+        document.getElementById('customerPhone').value.trim();
+
+    const customerAddress =
+        document.getElementById('customerAddress').value.trim();
+
+    const customerNote =
+        document.getElementById('customerNote').value.trim();
+
+    if (!customerName || !customerPhone || !customerAddress) {
+        alert('Lengkapi nama, nomor WhatsApp, dan alamat terlebih dahulu.');
+        return;
+    }
+
 
     const phone =
         '6285703260864';
 
 
     let message =
-        'Halo Dapur Ulul 👋%0A%0A';
+        'Halo Dapur Ulul 👋\n\n';
 
     message +=
-        '*Saya ingin memesan:*%0A%0A';
+        '*Saya ingin memesan:*\n\n';
 
 
     cart.forEach(item => {
@@ -1387,7 +1531,7 @@ function checkoutWhatsApp() {
             item.price * item.qty;
 
         message +=
-            `• ${item.name} x${item.qty} = ${formatRupiah(subtotal)}%0A`;
+            `• ${item.name} x${item.qty} = ${formatRupiah(subtotal)}\n`;
 
     });
 
@@ -1402,20 +1546,23 @@ function checkoutWhatsApp() {
 
 
     message +=
-        `%0A*Total: ${formatRupiah(total)}*%0A%0A`;
+        `\n*Total: ${formatRupiah(total)}*\n\n`;
 
     message +=
-        'Nama:%0A';
+        `Nama: ${customerName}\n`;
 
     message +=
-        'Alamat:%0A';
+        `Nomor WhatsApp: ${customerPhone}\n`;
 
     message +=
-        'Catatan:%0A';
+        `Alamat: ${customerAddress}\n`;
+
+    message +=
+        `Catatan: ${customerNote || '-'}\n`;
 
 
     const url =
-        `https://wa.me/${phone}?text=${message}`;
+        `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
 
     window.open(
