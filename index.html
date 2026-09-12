@@ -28,7 +28,7 @@ body {
     top: 0;
     z-index: 1000;
 
-    height: 65px;
+    height: 106px;
 
     background: #fff;
 
@@ -48,9 +48,11 @@ body {
 }
 
 .logo img {
-    width: 45px;
-    height: 45px;
+    width: 90px;
+    height: 90px;
     object-fit: contain;
+    flex-shrink: 0;
+    display: block;
 }
 
 .logo-mark {
@@ -126,7 +128,7 @@ body {
             rgba(0,0,0,.45),
             rgba(0,0,0,.45)
         ),
-        url("images/logo.jpeg")
+        url("images/seafood-platter.jpg")
         center/cover;
 
     display: flex;
@@ -138,6 +140,10 @@ body {
     color: white;
 }
 
+.hero-content {
+    animation: heroReveal .7s ease-out both;
+}
+
 .hero h1 {
     font-size: 42px;
     margin-bottom: 8px;
@@ -145,6 +151,34 @@ body {
 
 .hero p {
     font-size: 17px;
+}
+
+.hero-cta {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 11px 20px;
+    border-radius: 24px;
+    background: #f5a623;
+    color: white;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform .2s ease, background .2s ease;
+}
+
+.hero-cta:hover {
+    background: #e89512;
+    transform: translateY(-2px);
+}
+
+@keyframes heroReveal {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* =========================
@@ -194,7 +228,7 @@ body {
 
 .category-bar {
     position: sticky;
-    top: 65px;
+    top: 106px;
 
     z-index: 900;
 
@@ -274,6 +308,12 @@ body {
         0 4px 15px rgba(0,0,0,.07);
 
     position: relative;
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.menu-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.12);
 }
 
 .menu-image-wrapper {
@@ -363,6 +403,12 @@ body {
     font-size: 22px;
 
     cursor: pointer;
+    transition: transform .2s ease, background .2s ease;
+}
+
+.add-button:hover {
+    background: #6f350e;
+    transform: scale(1.08);
 }
 
 /* =========================
@@ -569,7 +615,17 @@ body {
 @media(max-width: 600px) {
 
     .header {
+        height: 92px;
         padding: 8px 12px;
+    }
+
+    .logo img {
+        width: 76px;
+        height: 76px;
+    }
+
+    .category-bar {
+        top: 92px;
     }
 
     .logo-text {
@@ -667,13 +723,17 @@ body {
 
 <section class="hero">
 
-    <div>
+    <div class="hero-content">
 
         <h1>Dapur Ulul</h1>
 
         <p>
             Menu lezat untuk setiap momen
         </p>
+
+        <a class="hero-cta" href="#menuGrid">
+            Lihat Menu
+        </a>
 
     </div>
 
@@ -860,7 +920,9 @@ body {
    DATA CART
 ========================= */
 
-let cart = [];
+let cart = JSON.parse(
+    localStorage.getItem('dapurUlulCart') || '[]'
+);
 
 
 /* =========================
@@ -916,6 +978,11 @@ function addToCart(name, price) {
 ========================= */
 
 function updateCart() {
+
+    localStorage.setItem(
+        'dapurUlulCart',
+        JSON.stringify(cart)
+    );
 
     const container =
         document.getElementById('cartItems');
@@ -1359,6 +1426,7 @@ function checkoutWhatsApp() {
 }
 
 
+updateCart();
 loadMenusFromSheets();
 
 </script>
